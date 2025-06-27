@@ -1,0 +1,15 @@
+C:\dev\Financas\src\Financas.Application\bin\Debug\net8.0\Financas.Application.deps.json
+C:\dev\Financas\src\Financas.Application\bin\Debug\net8.0\Financas.Application.dll
+C:\dev\Financas\src\Financas.Application\bin\Debug\net8.0\Financas.Application.pdb
+C:\dev\Financas\src\Financas.Application\bin\Debug\net8.0\Financas.Domain.dll
+C:\dev\Financas\src\Financas.Application\bin\Debug\net8.0\Financas.Domain.pdb
+C:\dev\Financas\src\Financas.Application\obj\Debug\net8.0\Financas.Application.csproj.AssemblyReference.cache
+C:\dev\Financas\src\Financas.Application\obj\Debug\net8.0\Financas.Application.GeneratedMSBuildEditorConfig.editorconfig
+C:\dev\Financas\src\Financas.Application\obj\Debug\net8.0\Financas.Application.AssemblyInfoInputs.cache
+C:\dev\Financas\src\Financas.Application\obj\Debug\net8.0\Financas.Application.AssemblyInfo.cs
+C:\dev\Financas\src\Financas.Application\obj\Debug\net8.0\Financas.Application.csproj.CoreCompileInputs.cache
+C:\dev\Financas\src\Financas.Application\obj\Debug\net8.0\Financas.AEDE7AD1.Up2Date
+C:\dev\Financas\src\Financas.Application\obj\Debug\net8.0\Financas.Application.dll
+C:\dev\Financas\src\Financas.Application\obj\Debug\net8.0\refint\Financas.Application.dll
+C:\dev\Financas\src\Financas.Application\obj\Debug\net8.0\Financas.Application.pdb
+C:\dev\Financas\src\Financas.Application\obj\Debug\net8.0\ref\Financas.Application.dll
