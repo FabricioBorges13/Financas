@@ -56,7 +56,6 @@ public class ClienteController : ControllerBase
         try
         {
             return Ok(await _buscarClientesUseCase.ExecutarAsync());
-
         }
         catch (KeyNotFoundException ex)
         {

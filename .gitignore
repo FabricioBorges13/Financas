@@ -1,0 +1,81 @@
+# Build results
+bin/
+obj/
+out/
+*.exe
+*.dll
+*.pdb
+
+# User-specific files
+*.user
+*.userosscache
+*.suo
+*.sln.docstates
+
+# Dotnet CLI
+.project.lock.json
+project.lock.json
+project.fragment.lock.json
+artifacts/
+
+# ASP.NET Scaffolding
+ScaffoldingReadMe.txt
+
+# Visual Studio Code
+.vscode/
+
+# Rider
+.idea/
+
+# Logs
+*.log
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Test Results
+TestResults/
+*.coverage
+*.coveragexml
+*.vspx
+*.vsp
+*.vspscc
+*.vssscc
+*.vsmdi
+*.psess
+*.vspx
+*.suo
+
+# Npm
+node_modules/
+
+# dotenv environment variables
+*.env
+
+# EF Core tools
+Migrations/
+
+**/Dockerfile.*
+**/docker-compose.override.yml
+
+*.db
+*.sqlite
+*.sqlite3
+
+# Global JSON
+global.json
+
+# NuGet package artifacts
+*.nupkg
+*.snupkg
+*.csproj.nuget.g.props
+*.csproj.nuget.g.targets
+*.csproj.nuget.dgspec.json
+
+*.dll
+*.exe
+*.pdb
+*.deps.json
+*.runtimeconfig.json
+*.db

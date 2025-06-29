@@ -14,11 +14,7 @@ public class TransacaoRepository : ITransacaoRepository
         await _dbContext.Transacoes.AddAsync(transacao);
         await _dbContext.SaveChangesAsync();
     }
-    public async Task<bool> ExistePorChaveIdempotenciaAsync(Guid chave)
-    {
-         return await _dbContext.Transacoes.AnyAsync(t => t.ChaveIdempotencia == chave);
-    }
-
+   
     public async Task<Transacao?> ObterPorIdAsync(Guid id)
     {
         return await _dbContext.Transacoes.FirstOrDefaultAsync(t => t.Id == id);

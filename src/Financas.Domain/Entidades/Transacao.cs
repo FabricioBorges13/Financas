@@ -8,11 +8,11 @@ public class Transacao
     public StatusTransacao Status { get; private set; }
     public DateTime DataHora { get; private set; }
     public string? Descricao { get; private set; }
-    public Guid ChaveIdempotencia { get; private set; }
+    public int? Parcelas { get; private set; }
 
     private Transacao() { }
 
-    public Transacao(Guid contaOrigemId, decimal valor, TipoTransacao tipo, Guid chaveIdempotencia, Guid? contaDestinoId = null, string? descricao = null)
+    public Transacao(Guid contaOrigemId, decimal valor, TipoTransacao tipo, Guid? contaDestinoId = null, string? descricao = null, int? parcelas = null)
     {
         if (valor <= 0)
             throw new ArgumentException("O valor da transação deve ser maior que zero.");
@@ -24,8 +24,8 @@ public class Transacao
         Tipo = tipo;
         Status = StatusTransacao.Pendente;
         DataHora = DateTime.UtcNow;
-        ChaveIdempotencia = chaveIdempotencia;
         Descricao = descricao;
+        Parcelas = parcelas;
     }
 
     public void MarcarComoConcluida()

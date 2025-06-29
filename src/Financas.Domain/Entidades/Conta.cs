@@ -1,4 +1,5 @@
 using System.Security.Cryptography;
+using System.Text.Json.Serialization;
 
 public class Conta
 {
@@ -12,8 +13,10 @@ public class Conta
     public DateTime DataAbertura { get; private set; }
     public DateTime? DataEncerramento { get; private set; }
     public Guid ClienteId { get; private set; }
-    public Cliente Cliente { get; private set; }
 
+    [JsonIgnore]
+    public Cliente Cliente { get; private set; }
+    
     protected Conta() { }
     public Conta(TipoConta tipoConta, Cliente cliente)
     {
@@ -77,15 +80,18 @@ public class Conta
         }
     }
 
-    public void Estornar(decimal valor)
+    public void EstornarTransacao(decimal valor, TipoTransacao tipoTransacao)
     {
         if (Status != StatusConta.Ativa)
-            throw new InvalidOperationException("A conta precisa estar ativa para estorno.");
+            throw new InvalidOperationException("Conta inativa.");
 
-        if (valor <= 0)
-            throw new ArgumentException("Valor inválido.");
+        if (tipoTransacao == TipoTransacao.Estorno)
+            throw new InvalidOperationException("Não é possível estornar um estorno.");
 
-        SaldoDisponivel += valor;
+        if (SaldoDisponivel < valor)
+            throw new InvalidOperationException("Saldo insuficiente para estorno.");
+
+        SaldoDisponivel -= valor;
     }
 
     public void TransferirPara(Conta destino, decimal valor)
@@ -101,6 +107,14 @@ public class Conta
 
         SaldoDisponivel -= valor;
         destino.ReceberTransferencia(valor);
+    }
+
+    public void AdicionarSaldo(decimal valor)
+    {
+        if (valor <= 0)
+            throw new ArgumentException("Valor inválido.");
+
+        SaldoDisponivel += valor;
     }
 
     private void ReceberTransferencia(decimal valor)

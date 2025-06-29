@@ -7,12 +7,14 @@ public class ContaController : ControllerBase
     private readonly IRegistrarContaUseCase _registrarContaUseCase;
     private readonly IBuscarContaUseCase _buscarContaUseCase;
     private readonly IBuscarContasUseCase _buscarContasUseCase;
+    private IAdicionarSaldoUseCase _adicionarSaldoUseCase;
 
-    public ContaController(IRegistrarContaUseCase registrarContaUseCase, IBuscarContaUseCase buscarContaUseCase, IBuscarContasUseCase buscarContasUseCase)
+    public ContaController(IRegistrarContaUseCase registrarContaUseCase, IBuscarContaUseCase buscarContaUseCase, IBuscarContasUseCase buscarContasUseCase, IAdicionarSaldoUseCase adicionarSaldoUseCase)
     {
         _registrarContaUseCase = registrarContaUseCase;
         _buscarContaUseCase = buscarContaUseCase;
         _buscarContasUseCase = buscarContasUseCase;
+        _adicionarSaldoUseCase = adicionarSaldoUseCase;
     }
 
     [HttpPost("conta")]
@@ -64,5 +66,24 @@ public class ContaController : ControllerBase
         }
     }
 
-  
+    [HttpPatch("adicionar-saldo")]
+    public async Task<IActionResult> AdicionarSaldo([FromBody] AdicionarSaldoRequest request)
+    {
+        try
+        {
+            return Ok(await _adicionarSaldoUseCase.ExecutarAsync(request));
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(new { mensagem = ex.Message });
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { mensagem = ex.Message });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return UnprocessableEntity(new { mensagem = ex.Message });
+        }
+    }
 }
