@@ -112,7 +112,7 @@ public class Conta
     public void AdicionarSaldo(decimal valor)
     {
         if (valor <= 0)
-            throw new ArgumentException("Valor inválido.");
+            throw new ArgumentException("Valor inválido para adicionar saldo.");
 
         SaldoDisponivel += valor;
     }
