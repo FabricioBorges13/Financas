@@ -71,7 +71,7 @@ public class ContaController : ControllerBase
     {
         try
         {
-            return Ok(await _adicionarSaldoUseCase.ExecutarAsync(request));
+            return Ok(await _adicionarSaldoUseCase.ExecutarAsync(request, HttpContext.RequestAborted));
         }
         catch (KeyNotFoundException ex)
         {

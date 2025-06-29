@@ -4,16 +4,21 @@ public class RegistrarVendaDebitoUseCase : IRegistrarVendaDebitoUseCase
     private readonly IContaRepository _contaRepository;
     private readonly ITransacaoRepository _transacaoRepository;
     private readonly IAuditoriaService _auditoriaService;
+    private readonly IResilienceService _resilienceService;
 
-    public RegistrarVendaDebitoUseCase(IContaRepository contaRepository, ITransacaoRepository transacaoRepository, IAuditoriaService auditoriaService)
+    public RegistrarVendaDebitoUseCase(IContaRepository contaRepository, ITransacaoRepository transacaoRepository, IAuditoriaService auditoriaService, IResilienceService resilienceService)
     {
         _contaRepository = contaRepository;
         _transacaoRepository = transacaoRepository;
         _auditoriaService = auditoriaService;
+        _resilienceService = resilienceService;
     }
-    public async Task<RegistrarVendaResponse> ExecutarAsync(RegistrarVendaDebitoRequest request)
+    public async Task<RegistrarVendaResponse> ExecutarAsync(RegistrarVendaDebitoRequest request, CancellationToken cancellationToken)
     {
-        try
+        var chaveLock = GeradorChave.GerarChaveLock(request.ContaId);
+        var chaveTransacao = GeradorChave.GerarChaveIdempotencia(TipoTransacao.VendaDebito, request.ContaId, valor: request.Valor);
+
+        return await _resilienceService.ExecuteAsync(chaveLock, chaveTransacao, async ct =>
         {
             var conta = await _contaRepository.BuscarPorNumeroConta(request.NumeroConta);
             if (conta == null)
@@ -39,15 +44,13 @@ public class RegistrarVendaDebitoUseCase : IRegistrarVendaDebitoUseCase
                 ContaId = conta.Id,
                 TransacaoId = transacao.Id
             };
-        }
-        catch (Exception ex)
+        }, cancellationToken,
+        onFailure: async ex =>
         {
             await _auditoriaService.RegistrarAsync("conta",
             dados: $"Falha ao realizar a transação: {ex.Message}",
             TipoTransacao.VendaDebito,
             StatusTransacao.Falhou);
-
-            throw new InvalidOperationException(ex.Message);
-        }
+        });
     }
 }

@@ -1,4 +1,4 @@
 public interface IRegistrarVendaCreditoParceladoUseCase
 {
-    Task<RegistrarVendaResponse> ExecutarAsync(RegistrarVendaCreditoParceladoRequest request);
+    Task<RegistrarVendaResponse> ExecutarAsync(RegistrarVendaCreditoParceladoRequest request, CancellationToken cancellationToken);
 }

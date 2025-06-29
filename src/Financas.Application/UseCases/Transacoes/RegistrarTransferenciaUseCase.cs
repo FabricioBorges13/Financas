@@ -4,16 +4,21 @@ public class RegistrarTransferenciaUseCase : IRegistrarTransferenciaUseCase
     private readonly IContaRepository _contaRepository;
     private readonly ITransacaoRepository _transacaoRepository;
     private readonly IAuditoriaService _auditoriaService;
+    private readonly IResilienceService _resilienceService;
 
-    public RegistrarTransferenciaUseCase(IContaRepository contaRepository, ITransacaoRepository transacaoRepository, IAuditoriaService auditoriaService)
+    public RegistrarTransferenciaUseCase(IContaRepository contaRepository, ITransacaoRepository transacaoRepository, IAuditoriaService auditoriaService, IResilienceService resilienceService)
     {
         _contaRepository = contaRepository;
         _transacaoRepository = transacaoRepository;
         _auditoriaService = auditoriaService;
+        _resilienceService = resilienceService;
     }
-    public async Task<RegistrarTransferenciaResponse> ExecutarAsync(RegistrarTransferenciaRequest request)
+    public async Task<RegistrarTransferenciaResponse> ExecutarAsync(RegistrarTransferenciaRequest request, CancellationToken cancellationToken)
     {
-        try
+        var chaveLock = GeradorChave.GerarChaveLock(request.ContaId);
+        var chaveTransacao = GeradorChave.GerarChaveIdempotencia(TipoTransacao.Transferencia, request.ContaId, contaDestinoId: request.ContaDestinoId, valor: request.Valor);
+
+        return await _resilienceService.ExecuteAsync(chaveLock, chaveTransacao, async ct =>
         {
             var contaOrigem = await _contaRepository.ObterPorIdAsync(request.ContaId);
             if (contaOrigem == null)
@@ -42,15 +47,13 @@ public class RegistrarTransferenciaUseCase : IRegistrarTransferenciaUseCase
                 Valor = transacao.Valor,
                 DataHora = DateTime.Now
             };
-        }
-        catch (Exception ex)
+        }, cancellationToken,
+        onFailure: async ex =>
         {
             await _auditoriaService.RegistrarAsync("conta",
             dados: $"Falha ao realizar a transação: {ex.Message}",
             TipoTransacao.Transferencia,
             StatusTransacao.Falhou);
-
-            throw new InvalidOperationException(ex.Message);
-        }
+        });
     }
 }

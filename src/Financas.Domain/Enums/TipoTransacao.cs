@@ -5,4 +5,5 @@ public enum TipoTransacao
     VendaDebito = 3,
     Estorno = 4,
     Transferencia = 5,
+    AdicionarSaldo = 6
 }

@@ -28,7 +28,7 @@ public class TransacoesController : ControllerBase
     {
         try
         {
-            return Ok(await _registrarVendaCreditoAvistaUseCase.ExecutarAsync(request));
+            return Ok(await _registrarVendaCreditoAvistaUseCase.ExecutarAsync(request, HttpContext.RequestAborted));
         }
         catch (KeyNotFoundException ex)
         {
@@ -49,7 +49,7 @@ public class TransacoesController : ControllerBase
     {
         try
         {
-            return Ok(await _registrarVendaCreditoParceladoUseCase.ExecutarAsync(request));
+            return Ok(await _registrarVendaCreditoParceladoUseCase.ExecutarAsync(request, HttpContext.RequestAborted));
         }
         catch (KeyNotFoundException ex)
         {
@@ -70,7 +70,7 @@ public class TransacoesController : ControllerBase
     {
         try
         {
-            return Ok(await _registrarVendaDebitoUseCase.ExecutarAsync(request));
+            return Ok(await _registrarVendaDebitoUseCase.ExecutarAsync(request, HttpContext.RequestAborted));
         }
         catch (KeyNotFoundException ex)
         {
@@ -91,7 +91,7 @@ public class TransacoesController : ControllerBase
     {
         try
         {
-            return Ok(await _registrarEstornoUseCase.ExecutarAsync(request));
+            return Ok(await _registrarEstornoUseCase.ExecutarAsync(request, HttpContext.RequestAborted));
         }
         catch (KeyNotFoundException ex)
         {
@@ -112,7 +112,7 @@ public class TransacoesController : ControllerBase
     {
         try
         {
-            return Ok(await _registrarTransferenciaUseCase.ExecutarAsync(request));
+            return Ok(await _registrarTransferenciaUseCase.ExecutarAsync(request, HttpContext.RequestAborted));
         }
         catch (KeyNotFoundException ex)
         {

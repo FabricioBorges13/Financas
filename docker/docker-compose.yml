@@ -13,6 +13,12 @@ services:
       - sqlserverdata:/var/opt/mssql
     networks:
       - financas-net
+  redis:
+    image: redis
+    ports:
+      - "6379:6379"
+    networks:
+      - financas-net    
 
 volumes:
   sqlserverdata:

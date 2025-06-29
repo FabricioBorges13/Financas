@@ -1,4 +1,4 @@
 public interface IAdicionarSaldoUseCase
 {
-    Task<ContaDTO> ExecutarAsync(AdicionarSaldoRequest request);
+    Task<ContaDTO> ExecutarAsync(AdicionarSaldoRequest request, CancellationToken cancellationToken);
 }
