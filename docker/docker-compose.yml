@@ -13,12 +13,25 @@ services:
       - sqlserverdata:/var/opt/mssql
     networks:
       - financas-net
+
   redis:
     image: redis
     ports:
       - "6379:6379"
     networks:
       - financas-net    
+
+  api:
+    build:
+      context: ..
+      dockerfile: src/Financas.Api/Dockerfile
+    ports:
+      - "5000:80"
+    networks:
+      - financas-net
+    depends_on:
+      - sqlserver
+      - redis
 
 volumes:
   sqlserverdata:
