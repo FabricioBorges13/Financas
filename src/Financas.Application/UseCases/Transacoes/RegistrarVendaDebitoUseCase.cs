@@ -39,7 +39,7 @@ public class RegistrarVendaDebitoUseCase : IRegistrarVendaDebitoUseCase
             return new RegistrarVendaResponse
             {
                 DataHora = DateTime.Now,
-                SaldoFuturo = conta.SaldoFuturo,
+                SaldoDisponivel = conta.SaldoDisponivel,
                 Tipo = TipoTransacao.VendaDebito,
                 ContaId = conta.Id,
                 TransacaoId = transacao.Id

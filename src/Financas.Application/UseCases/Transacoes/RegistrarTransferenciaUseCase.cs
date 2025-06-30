@@ -26,7 +26,7 @@ public class RegistrarTransferenciaUseCase : IRegistrarTransferenciaUseCase
 
             var contaDestino = await _contaRepository.ObterPorIdAsync(request.ContaDestinoId);
             if (contaDestino == null)
-                throw new InvalidOperationException($"Conta de destino não encontrada!");
+                throw new InvalidOperationException("Conta de destino não encontrada!");
 
             contaOrigem.TransferirPara(contaDestino, request.Valor);
 

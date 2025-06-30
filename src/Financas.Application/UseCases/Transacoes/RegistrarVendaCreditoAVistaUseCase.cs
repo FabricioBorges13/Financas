@@ -33,7 +33,7 @@ public class RegistrarVendaCreditoAVistaUseCase : IRegistrarVendaCreditoAVistaUs
             await _transacaoRepository.AdicionarAsync(transacao);
             await _auditoriaService.RegistrarAsync("conta",
                     dados: $"Compra de R${transacao.Valor} registrada",
-                    TipoTransacao.Transferencia,
+                    TipoTransacao.VendaCreditoAVista,
                     StatusTransacao.Concluida);
 
             return new RegistrarVendaResponse
