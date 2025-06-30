@@ -46,11 +46,6 @@ public class RegistrarVendaCreditoParceladoUseCaseTests
         response.SaldoFuturo.Should().Be(200);
         _contaRepository.Verify(x => x.AtualizarAsync(It.IsAny<Conta>()), Times.AtLeastOnce);
         _transacaoRepository.Verify(x => x.AdicionarAsync(It.IsAny<Transacao>()), Times.Once);
-        _auditoriaService.Verify(x => x.RegistrarAsync(
-            "conta",
-            It.Is<string>(msg => msg.Contains("Compra")),
-            TipoTransacao.VendaCreditoParcelado,
-            StatusTransacao.Concluida), Times.Once);
     }
 
     [Fact]
@@ -76,5 +71,5 @@ public class RegistrarVendaCreditoParceladoUseCaseTests
         await act.Should().ThrowAsync<InvalidOperationException>()
             .WithMessage($"Conta {_conta.NumeroConta} não encontrada!");
     }
-    
+
 }

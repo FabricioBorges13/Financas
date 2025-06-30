@@ -35,10 +35,11 @@ public class RegistrarTransferenciaUseCase : IRegistrarTransferenciaUseCase
             await _contaRepository.AtualizarAsync(contaDestino);
             await _transacaoRepository.AdicionarAsync(transacao);
 
-            await _auditoriaService.RegistrarAsync("conta",
+            await _auditoriaService.RegistrarAsync("conta", contaOrigem.Id,
                     dados: $"Transferência de R${transacao.Valor} registrada da conta origem {contaOrigem.Id} para conta destino {contaDestino.Id}",
                     TipoTransacao.Transferencia,
-                    StatusTransacao.Concluida);
+                    StatusTransacao.Concluida,
+                    contaDestino.Id);
 
             return new RegistrarTransferenciaResponse
             {
@@ -50,10 +51,11 @@ public class RegistrarTransferenciaUseCase : IRegistrarTransferenciaUseCase
         }, cancellationToken,
         onFailure: async ex =>
         {
-            await _auditoriaService.RegistrarAsync("conta",
+            await _auditoriaService.RegistrarAsync("conta", request.ContaId,
             dados: $"Falha ao realizar a transação: {ex.Message}",
             TipoTransacao.Transferencia,
-            StatusTransacao.Falhou);
+            StatusTransacao.Falhou,
+            request.ContaDestinoId);
         });
     }
 }

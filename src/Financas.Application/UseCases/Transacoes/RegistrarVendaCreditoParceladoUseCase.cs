@@ -21,9 +21,9 @@ public class RegistrarVendaCreditoParceladoUseCase : IRegistrarVendaCreditoParce
 
         return await _resilienceService.ExecuteAsync(chaveLock, chaveTransacao, async ct =>
         {
-            var conta = await _contaRepository.BuscarPorNumeroConta(request.NumeroConta);
+            var conta = await _contaRepository.ObterPorIdAsync(request.ContaId);
             if (conta == null)
-                throw new InvalidOperationException($"Conta {request.NumeroConta} não encontrada!");
+                throw new InvalidOperationException($"Conta {request.ContaId} não encontrada!");
 
             conta.RegistrarVenda(request.Valor, TipoTransacao.VendaCreditoParcelado);
 
@@ -33,7 +33,7 @@ public class RegistrarVendaCreditoParceladoUseCase : IRegistrarVendaCreditoParce
 
             await _transacaoRepository.AdicionarAsync(transacao);
 
-            await _auditoriaService.RegistrarAsync("conta",
+            await _auditoriaService.RegistrarAsync("conta", conta.Id,
                     dados: $"Compra de R${transacao.Valor} registrada em {transacao.Parcelas} parcelas",
                     TipoTransacao.VendaCreditoParcelado,
                     StatusTransacao.Concluida);
@@ -49,7 +49,7 @@ public class RegistrarVendaCreditoParceladoUseCase : IRegistrarVendaCreditoParce
         }, cancellationToken,
         onFailure: async ex =>
         {
-            await _auditoriaService.RegistrarAsync("conta",
+            await _auditoriaService.RegistrarAsync("conta", request.ContaId,
             dados: $"Falha ao realizar a transação: {ex.Message}",
             TipoTransacao.VendaCreditoParcelado,
             StatusTransacao.Falhou);

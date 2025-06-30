@@ -20,16 +20,16 @@ public class AdicionarSaldoUseCase : IAdicionarSaldoUseCase
 
         return await _resilienceService.ExecuteAsync(chaveLock, chaveTransacao, async ct =>
         {
-            var conta = await _contaRepository.BuscarPorNumeroConta(request.NumeroConta);
+            var conta = await _contaRepository.ObterPorIdAsync(request.ContaId);
             if (conta == null)
-                throw new InvalidOperationException($"Conta {request.NumeroConta} não encontrada!");
+                throw new InvalidOperationException($"Conta {request.ContaId} não encontrada!");
 
             var transacao = new Transacao(conta.Id, request.Saldo, TipoTransacao.AdicionarSaldo);
             conta.AdicionarSaldo(request.Saldo);
 
             await _transacaoRepository.AdicionarAsync(transacao);
             await _contaRepository.AtualizarAsync(conta);
-            await _auditoriaService.RegistrarAsync("conta",
+            await _auditoriaService.RegistrarAsync("conta", conta.Id,
                     dados: $"Adicionado saldo de R${request.Saldo}",
                     TipoTransacao.AdicionarSaldo,
                     StatusTransacao.Concluida);
@@ -49,7 +49,7 @@ public class AdicionarSaldoUseCase : IAdicionarSaldoUseCase
         }, cancellationToken,
         onFailure: async ex =>
         {
-            await _auditoriaService.RegistrarAsync("conta",
+            await _auditoriaService.RegistrarAsync("conta", request.ContaId, 
             dados: $"Falha ao adicionar saldo: {ex.Message}",
             TipoTransacao.AdicionarSaldo,
             StatusTransacao.Falhou);

@@ -1,4 +1,7 @@
 
+
+using Microsoft.EntityFrameworkCore;
+
 public class AuditoriaRepository : IAuditoriaRepository
 {
     private readonly AppDbContext _dbContext;
@@ -7,6 +10,12 @@ public class AuditoriaRepository : IAuditoriaRepository
     {
         _dbContext = appDbContext;
     }
+
+    public async Task<List<Auditoria>> BuscarTodasAuditoriasAsync()
+    {
+        return await _dbContext.Auditorias.ToListAsync();
+    }
+
     public async Task RegistrarAsync(Auditoria auditoria)
     {
         await _dbContext.Auditorias.AddAsync(auditoria);

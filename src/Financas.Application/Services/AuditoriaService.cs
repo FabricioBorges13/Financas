@@ -7,9 +7,9 @@ public class AuditoriaService : IAuditoriaService
     {
         _repository = repository;
     }
-    public async Task RegistrarAsync(string entidade, string dados, TipoTransacao tipoTransacao, StatusTransacao statusTransacao)
+    public async Task RegistrarAsync(string entidade, Guid contaOrigemId, string dados, TipoTransacao tipoTransacao, StatusTransacao statusTransacao, Guid? contaDestinoId = null)
     {
-        var auditoria = new Auditoria(tipoTransacao, entidade, dados, statusTransacao);
+        var auditoria = new Auditoria(tipoTransacao, contaOrigemId, entidade, dados, statusTransacao, contaDestinoId);
         await _repository.RegistrarAsync(auditoria);
     }
 }

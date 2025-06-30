@@ -13,7 +13,7 @@ public class ResilienceService : IResilienceService
 
     public async Task<T> ExecuteAsync<T>(string chaveLock,
     string chaveIdempotencia,
-    Func<CancellationToken, Task<T>> action, 
+    Func<CancellationToken, Task<T>> action,
     CancellationToken cancellationToken,
     Func<Exception, Task>? onFailure = null)
     {
@@ -31,11 +31,15 @@ public class ResilienceService : IResilienceService
         try
         {
             // Polly: Retry + Fallback
-            var fallbackPolicy = Policy
+            var fallbackPolicy = Policy<T>
                 .Handle<Exception>()
-                .FallbackAsync(ct => Task.CompletedTask);
+                .FallbackAsync(default(T), async (ex, ct) =>
+                {
+                    if (onFailure is not null)
+                        await onFailure(ex.Exception);
+                });
 
-            var retryPolicy = Policy
+            var retryPolicy = Policy<T>
                 .Handle<Exception>()
                 .WaitAndRetryAsync(3, attempt => TimeSpan.FromMilliseconds(300));
 
@@ -52,7 +56,7 @@ public class ResilienceService : IResilienceService
                     await transaction.CommitAsync(ct);
 
                     await _cache.SetAsync(chaveIdempotencia, "executada", TimeSpan.FromMinutes(5));
-                   
+
                     return resultado;
                 }
                 catch (Exception ex)

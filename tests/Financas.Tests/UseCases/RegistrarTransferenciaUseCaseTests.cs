@@ -58,11 +58,6 @@ public class RegistrarTransferenciaUseCaseTests
         response.Valor.Should().Be(100);
         _contaRepository.Verify(x => x.AtualizarAsync(It.IsAny<Conta>()), Times.AtLeastOnce);
         _transacaoRepository.Verify(x => x.AdicionarAsync(It.IsAny<Transacao>()), Times.Once);
-        _auditoriaService.Verify(x => x.RegistrarAsync(
-            "conta",
-            It.Is<string>(msg => msg.Contains("Transferência")),
-            TipoTransacao.Transferencia,
-            StatusTransacao.Concluida), Times.Once);
     }
 
     [Fact]

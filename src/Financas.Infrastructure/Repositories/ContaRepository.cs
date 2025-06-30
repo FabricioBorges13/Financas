@@ -12,6 +12,7 @@ public class ContaRepository : IContaRepository
     public async Task AdicionarAsync(Conta conta)
     {
         await _dbContext.Contas.AddAsync(conta);
+        await _dbContext.SaveChangesAsync();
     }
 
     public async Task AtualizarAsync(Conta conta)

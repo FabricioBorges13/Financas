@@ -1,9 +1,9 @@
 using System.Text.Json.Serialization;
+using Financas.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using StackExchange.Redis;
 
 var builder = WebApplication.CreateBuilder(args);
-builder.WebHost.UseUrls("http://*:80");
 
 // Add services to the container.
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -11,10 +11,13 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddControllers();
 
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlServer("Server=localhost,1433;Database=FinancasDb;User Id=sa;Password=P@ssword1;TrustServerCertificate=True"));
+    options.UseSqlServer(connectionString));
+var redisHost = builder.Configuration.GetConnectionString("RedisConnection");
 builder.Services.AddSingleton<IConnectionMultiplexer>(sp =>
-    ConnectionMultiplexer.Connect("localhost:6379"));
+    ConnectionMultiplexer.Connect(redisHost));
 
 builder.Services.AddScoped<ITransacaoRepository, TransacaoRepository>();
 builder.Services.AddScoped<IClienteRepository, ClienteRepository>();
@@ -36,6 +39,8 @@ builder.Services.AddScoped<IAuditoriaRepository, AuditoriaRepository>();
 builder.Services.AddScoped<IRedisRepository, RedisRepository>();
 builder.Services.AddScoped<IRedisService, RedisService>();
 builder.Services.AddScoped<IResilienceService, ResilienceService>();
+builder.Services.AddScoped<IBuscarTodasAsTransacoesUseCase, BuscarTodasAsTransacoesUseCase>();
+builder.Services.AddScoped<IBuscarTodasAuditoriasUseCase, BuscarTodasAuditoriasUseCase>();
 
 
 builder.Services.AddControllers()
@@ -46,12 +51,21 @@ builder.Services.AddControllers()
 
 var app = builder.Build();
 
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+
+    var context = services.GetRequiredService<AppDbContext>();
+    await context.Database.MigrateAsync();
+    await DbInitializer.SeedAsync(context);
+}
+
 // Configure the HTTP request pipeline.
 app.UseSwagger();
 app.UseSwaggerUI();
 
 
-app.UseHttpsRedirection();
+//app.UseHttpsRedirection();
 
 app.MapControllers();
 app.Run();

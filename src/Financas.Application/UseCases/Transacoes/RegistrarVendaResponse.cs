@@ -8,4 +8,5 @@ public class RegistrarVendaResponse
     public TipoTransacao? Tipo { get; set; }
     public int? NumeroParcelas { get; set; }
     public DateTime DataHora { get; set; }
+    public Guid? ContaDestinoId { get; set; }
 }

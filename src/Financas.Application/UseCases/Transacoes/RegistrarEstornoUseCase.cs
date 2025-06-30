@@ -48,7 +48,7 @@ public class RegistrarEstornoUseCase : IRegistrarEstornoUseCase
             if (contaDestino != null)
                 await _contaRepository.AtualizarAsync(contaDestino);
 
-            await _auditoriaService.RegistrarAsync("conta",
+            await _auditoriaService.RegistrarAsync("conta", conta.Id,
                 $"Estorno de R${transacao.Valor} registrada na conta {conta.Id}",
                 TipoTransacao.Estorno,
                 StatusTransacao.Concluida);
@@ -66,7 +66,7 @@ public class RegistrarEstornoUseCase : IRegistrarEstornoUseCase
         }, cancellationToken,
         onFailure: async ex =>
         {
-            await _auditoriaService.RegistrarAsync("conta",
+            await _auditoriaService.RegistrarAsync("conta", request.ContaId,
                 $"Falha ao realizar estorno: {ex.Message}",
                 TipoTransacao.Estorno,
                 StatusTransacao.Falhou);

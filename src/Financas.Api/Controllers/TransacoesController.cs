@@ -9,18 +9,21 @@ public class TransacoesController : ControllerBase
     private readonly IRegistrarVendaDebitoUseCase _registrarVendaDebitoUseCase;
     private readonly IRegistrarEstornoUseCase _registrarEstornoUseCase;
     private readonly IRegistrarTransferenciaUseCase _registrarTransferenciaUseCase;
+    private readonly IBuscarTodasAsTransacoesUseCase _buscarTodasAsTransacoesUseCase;
 
     public TransacoesController(IRegistrarVendaCreditoParceladoUseCase registrarVendaUseCase,
     IRegistrarVendaCreditoAVistaUseCase registrarVendaCreditoAVistaUseCase,
     IRegistrarVendaDebitoUseCase registrarVendaDebitoUseCase,
     IRegistrarEstornoUseCase registrarEstornoUseCase,
-    IRegistrarTransferenciaUseCase registrarTransferenciaUseCase)
+    IRegistrarTransferenciaUseCase registrarTransferenciaUseCase,
+    IBuscarTodasAsTransacoesUseCase buscarTodasAsTransacoesUseCase)
     {
         _registrarVendaCreditoParceladoUseCase = registrarVendaUseCase;
         _registrarVendaCreditoAvistaUseCase = registrarVendaCreditoAVistaUseCase;
         _registrarVendaDebitoUseCase = registrarVendaDebitoUseCase;
         _registrarEstornoUseCase = registrarEstornoUseCase;
         _registrarTransferenciaUseCase = registrarTransferenciaUseCase;
+        _buscarTodasAsTransacoesUseCase = buscarTodasAsTransacoesUseCase;
     }
 
     [HttpPost("vendas/credito-avista")]
@@ -127,10 +130,18 @@ public class TransacoesController : ControllerBase
             return UnprocessableEntity(new { mensagem = ex.Message });
         }
     }
-
-    [HttpGet("{id:guid}")]
-    public IActionResult ObterPorId(Guid id)
+  
+    [HttpGet()]
+    public async Task<IActionResult> BuscarTransacoes()
     {
-        return Ok(new { id, mensagem = "Simulação de retorno. Implemente se desejar." });
+        try
+        {
+            return Ok(await _buscarTodasAsTransacoesUseCase.ExecutarAsync());
+
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(new { mensagem = ex.Message });
+        }
     }
 }

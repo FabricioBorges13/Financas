@@ -1,6 +1,8 @@
 public class Auditoria
 {
     public Guid Id { get; private set; }
+    public Guid ContaOrigemId { get; private set; }
+    public Guid? ContaDestinoId { get; private set; }
     public DateTime DataHora { get; private set; }
     public TipoTransacao TipoTransacao { get; private set; }
     public string EntidadeAfetada { get; private set; }
@@ -8,7 +10,7 @@ public class Auditoria
     public StatusTransacao StatusTransacao { get; private set; }
 
     protected Auditoria() { }
-    public Auditoria(TipoTransacao tipoTransacao, string entidade, string dados, StatusTransacao statusTransacao)
+    public Auditoria(TipoTransacao tipoTransacao, Guid contaOrigemId, string entidade, string dados, StatusTransacao statusTransacao, Guid? contaDestinoId = null)
     {
         Id = Guid.NewGuid();
         DataHora = DateTime.Now;
@@ -16,5 +18,7 @@ public class Auditoria
         EntidadeAfetada = entidade;
         Dados = dados;
         StatusTransacao = statusTransacao;
+        ContaOrigemId = contaOrigemId;
+        ContaDestinoId = contaDestinoId;
     }
 }

@@ -49,9 +49,11 @@ public class RegistrarEstornoUseCaseTests
         _transacaoRepository.Verify(x => x.AdicionarAsync(It.IsAny<Transacao>()), Times.Once);
         _auditoriaService.Verify(x => x.RegistrarAsync(
             "conta",
+            _conta.Id,
             It.Is<string>(msg => msg.Contains("Estorno")),
             TipoTransacao.Estorno,
-            StatusTransacao.Concluida), Times.Once);
+            StatusTransacao.Concluida,
+            It.Is<Guid?>(id => !id.HasValue)), Times.Once);
     }
 
     [Fact]
