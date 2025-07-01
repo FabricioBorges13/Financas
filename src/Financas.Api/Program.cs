@@ -1,6 +1,7 @@
 using System.Text.Json.Serialization;
 using Financas.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
+using Serilog;
 using StackExchange.Redis;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -42,13 +43,20 @@ builder.Services.AddScoped<IResilienceService, ResilienceService>();
 builder.Services.AddScoped<IBuscarTodasAsTransacoesUseCase, BuscarTodasAsTransacoesUseCase>();
 builder.Services.AddScoped<IBuscarTodasAuditoriasUseCase, BuscarTodasAuditoriasUseCase>();
 
-
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
         options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
     });
+builder.Host.UseSerilog();    
 
+Log.Logger = new LoggerConfiguration()
+    .Enrich.FromLogContext()
+    .WriteTo.Console(new Serilog.Formatting.Compact.RenderedCompactJsonFormatter()) // Ideal pra Docker + Loki
+    .WriteTo.File("logs/app.log", rollingInterval: RollingInterval.Day)
+    .CreateLogger();
+
+Log.Information("Iniciando a aplicação");
 var app = builder.Build();
 
 using (var scope = app.Services.CreateScope())

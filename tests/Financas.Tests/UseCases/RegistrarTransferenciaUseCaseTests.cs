@@ -1,4 +1,5 @@
 using FluentAssertions;
+using Microsoft.Extensions.Logging;
 using Moq;
 
 public class RegistrarTransferenciaUseCaseTests
@@ -10,6 +11,7 @@ public class RegistrarTransferenciaUseCaseTests
     private Mock<IAuditoriaService> _auditoriaService;
     private Mock<ITransacaoRepository> _transacaoRepository;
     private Mock<IResilienceService> _resilienceService;
+    private Mock<ILogger<RegistrarTransferenciaUseCase>> loggerMock = new Mock<ILogger<RegistrarTransferenciaUseCase>>();
     public RegistrarTransferenciaUseCaseTests()
     {
         _cliente = new Cliente("teste", "51741608066", TipoDocumento.CPF);
@@ -37,7 +39,7 @@ public class RegistrarTransferenciaUseCaseTests
     public async void RegistrarTransferencia_DeveSerRegistrado()
     {
         //Arrange  
-        var useCase = new RegistrarTransferenciaUseCase(_contaRepository.Object, _transacaoRepository.Object, _auditoriaService.Object, _resilienceService.Object);
+        var useCase = new RegistrarTransferenciaUseCase(loggerMock.Object, _contaRepository.Object, _transacaoRepository.Object, _auditoriaService.Object, _resilienceService.Object);
         _conta.AdicionarSaldo(200);
         var contaDestino = new Conta(TipoConta.Corrente, _cliente);
         var request = new RegistrarTransferenciaRequest
@@ -64,7 +66,7 @@ public class RegistrarTransferenciaUseCaseTests
     public async Task RegistrarTransferencia_DeveRetornarErroDeContaNaoEncontrada()
     {
         // Arrange
-        var useCase = new RegistrarTransferenciaUseCase(_contaRepository.Object, _transacaoRepository.Object, _auditoriaService.Object, _resilienceService.Object);
+        var useCase = new RegistrarTransferenciaUseCase(loggerMock.Object, _contaRepository.Object, _transacaoRepository.Object, _auditoriaService.Object, _resilienceService.Object);
 
         var request = new RegistrarTransferenciaRequest
         {
@@ -79,14 +81,14 @@ public class RegistrarTransferenciaUseCaseTests
 
         //Assert
         await act.Should().ThrowAsync<InvalidOperationException>()
-            .WithMessage("Conta de origem não encontrada!");
+            .WithMessage($"Conta origem {_conta.Id} não encontrada!");
     }
 
     [Fact]
     public async Task RegistrarTransferencia_DeveRetornarErroSaldoInsuficiente()
     {
         // Arrange
-        var useCase = new RegistrarTransferenciaUseCase(_contaRepository.Object, _transacaoRepository.Object, _auditoriaService.Object, _resilienceService.Object);
+        var useCase = new RegistrarTransferenciaUseCase(loggerMock.Object, _contaRepository.Object, _transacaoRepository.Object, _auditoriaService.Object, _resilienceService.Object);
         var contaDestino = new Conta(TipoConta.Corrente, _cliente);
         var request = new RegistrarTransferenciaRequest
         {
@@ -109,12 +111,13 @@ public class RegistrarTransferenciaUseCaseTests
     public async Task RegistrarTransferencia_DeveRetornarErroDeContaDestinoNaoEncontrada()
     {
         // Arrange
-        var useCase = new RegistrarTransferenciaUseCase(_contaRepository.Object, _transacaoRepository.Object, _auditoriaService.Object, _resilienceService.Object);
+        var useCase = new RegistrarTransferenciaUseCase(loggerMock.Object, _contaRepository.Object, _transacaoRepository.Object, _auditoriaService.Object, _resilienceService.Object);
         var contaDestino = new Conta(TipoConta.Corrente, _cliente);
         var request = new RegistrarTransferenciaRequest
         {
             ContaId = _conta.Id,
-            Valor = 100
+            Valor = 100,
+            ContaDestinoId = contaDestino.Id
         };
 
         _contaRepository.Setup(x => x.ObterPorIdAsync(_conta.Id)).ReturnsAsync(_conta);
@@ -125,14 +128,14 @@ public class RegistrarTransferenciaUseCaseTests
 
         //Assert
         await act.Should().ThrowAsync<InvalidOperationException>()
-            .WithMessage("Conta de destino não encontrada!");
+            .WithMessage($"Conta destino {request.ContaDestinoId} não encontrada!");
     }
 
     [Fact]
     public async Task RegistrarTransferencia_DeveRetornarErroContaInativa()
     {
         // Arrange
-        var useCase = new RegistrarTransferenciaUseCase(_contaRepository.Object, _transacaoRepository.Object, _auditoriaService.Object, _resilienceService.Object);
+        var useCase = new RegistrarTransferenciaUseCase(loggerMock.Object, _contaRepository.Object, _transacaoRepository.Object, _auditoriaService.Object, _resilienceService.Object);
         var contaDestino = new Conta(TipoConta.Corrente, _cliente);
         contaDestino.Encerrar();
         var request = new RegistrarTransferenciaRequest

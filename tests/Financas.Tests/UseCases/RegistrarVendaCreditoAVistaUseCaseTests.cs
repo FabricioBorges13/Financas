@@ -1,4 +1,5 @@
 using FluentAssertions;
+using Microsoft.Extensions.Logging;
 using Moq;
 
 public class RegistrarVendaCreditoAVistaUseCaseTests
@@ -9,6 +10,7 @@ public class RegistrarVendaCreditoAVistaUseCaseTests
     private Mock<IAuditoriaService> _auditoriaService;
     private Mock<ITransacaoRepository> _transacaoRepository;
     private Mock<IResilienceService> _resilienceService;
+    private Mock<ILogger<RegistrarVendaCreditoAVistaUseCase>> loggerMock = new Mock<ILogger<RegistrarVendaCreditoAVistaUseCase>>();
     public RegistrarVendaCreditoAVistaUseCaseTests()
     {
         _cliente = new Cliente("teste", "51741608066", TipoDocumento.CPF);
@@ -26,16 +28,15 @@ public class RegistrarVendaCreditoAVistaUseCaseTests
     public async Task RegistrarVendaCreditoAVista_DeveSerRealizado()
     {
         // Arrange
-        var useCase = new RegistrarVendaCreditoAVistaUseCase(_contaRepository.Object, _transacaoRepository.Object, _auditoriaService.Object, _resilienceService.Object);
+        var useCase = new RegistrarVendaCreditoAVistaUseCase(loggerMock.Object, _contaRepository.Object, _transacaoRepository.Object, _auditoriaService.Object, _resilienceService.Object);
 
         var request = new RegistrarVendaCreditoAvistaRequest
         {
             ContaId = _conta.Id,
-            Valor = 200,
-            NumeroConta = _conta.NumeroConta
+            Valor = 200
         };
 
-        _contaRepository.Setup(x => x.BuscarPorNumeroConta(It.IsAny<long>())).ReturnsAsync(_conta);
+        _contaRepository.Setup(x => x.ObterPorIdAsync(It.IsAny<Guid>())).ReturnsAsync(_conta);
 
         //Action
         var response = await useCase.ExecutarAsync(request, CancellationToken.None);
@@ -51,13 +52,12 @@ public class RegistrarVendaCreditoAVistaUseCaseTests
     public async Task RegistrarVendaCreditoAVista_DeveRetornarErroDeContaNaoEncontrada()
     {
         // Arrange
-        var useCase = new RegistrarVendaCreditoAVistaUseCase(_contaRepository.Object, _transacaoRepository.Object, _auditoriaService.Object, _resilienceService.Object);
+        var useCase = new RegistrarVendaCreditoAVistaUseCase(loggerMock.Object, _contaRepository.Object, _transacaoRepository.Object, _auditoriaService.Object, _resilienceService.Object);
 
         var request = new RegistrarVendaCreditoAvistaRequest
         {
             ContaId = _conta.Id,
             Valor = 200,
-            NumeroConta = _conta.NumeroConta
         };
 
         _contaRepository.Setup(x => x.BuscarPorNumeroConta(It.IsAny<long>()));
@@ -67,7 +67,7 @@ public class RegistrarVendaCreditoAVistaUseCaseTests
 
         //Assert
         await act.Should().ThrowAsync<InvalidOperationException>()
-            .WithMessage($"Conta {_conta.NumeroConta} não encontrada!");
+            .WithMessage($"Conta {_conta.Id} não encontrada!");
     }
 
 }

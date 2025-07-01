@@ -1,4 +1,5 @@
 using FluentAssertions;
+using Microsoft.Extensions.Logging;
 using Moq;
 
 public class RegistrarVendaDebitoUseCaseTests
@@ -9,6 +10,7 @@ public class RegistrarVendaDebitoUseCaseTests
     private Mock<IAuditoriaService> _auditoriaService;
     private Mock<ITransacaoRepository> _transacaoRepository;
     private Mock<IResilienceService> _resilienceService;
+    private Mock<ILogger<RegistrarVendaDebitoUseCase>> loggerMock = new Mock<ILogger<RegistrarVendaDebitoUseCase>>();
     public RegistrarVendaDebitoUseCaseTests()
     {
         _cliente = new Cliente("teste", "51741608066", TipoDocumento.CPF);
@@ -26,16 +28,15 @@ public class RegistrarVendaDebitoUseCaseTests
     public async void RegistrarVendadebito_DeveSerRegistrado()
     {
         //Arrange  
-        var useCase = new RegistrarVendaDebitoUseCase(_contaRepository.Object, _transacaoRepository.Object, _auditoriaService.Object, _resilienceService.Object);
+        var useCase = new RegistrarVendaDebitoUseCase(loggerMock.Object, _contaRepository.Object, _transacaoRepository.Object, _auditoriaService.Object, _resilienceService.Object);
         _conta.AdicionarSaldo(200);
         var request = new RegistrarVendaDebitoRequest
         {
             ContaId = _conta.Id,
-            Valor = 200,
-            NumeroConta = _conta.NumeroConta,
+            Valor = 200
         };
 
-        _contaRepository.Setup(x => x.BuscarPorNumeroConta(It.IsAny<long>())).ReturnsAsync(_conta);
+        _contaRepository.Setup(x => x.ObterPorIdAsync(It.IsAny<Guid>())).ReturnsAsync(_conta);
 
         //Action
         var response = await useCase.ExecutarAsync(request, CancellationToken.None);
@@ -51,13 +52,12 @@ public class RegistrarVendaDebitoUseCaseTests
     public async Task RegistrarVendaDebito_DeveRetornarErroDeContaNaoEncontrada()
     {
         // Arrange
-        var useCase = new RegistrarVendaDebitoUseCase(_contaRepository.Object, _transacaoRepository.Object, _auditoriaService.Object, _resilienceService.Object);
+        var useCase = new RegistrarVendaDebitoUseCase(loggerMock.Object, _contaRepository.Object, _transacaoRepository.Object, _auditoriaService.Object, _resilienceService.Object);
 
         var request = new RegistrarVendaDebitoRequest
         {
             ContaId = _conta.Id,
-            Valor = 200,
-            NumeroConta = _conta.NumeroConta,
+            Valor = 200
         };
 
         _contaRepository.Setup(x => x.BuscarPorNumeroConta(It.IsAny<long>()));
@@ -67,23 +67,22 @@ public class RegistrarVendaDebitoUseCaseTests
 
         //Assert
         await act.Should().ThrowAsync<InvalidOperationException>()
-            .WithMessage($"Conta {_conta.NumeroConta} não encontrada!");
+            .WithMessage($"Conta {_conta.Id} não encontrada!");
     }
 
     [Fact]
     public async Task RegistrarVendaDebito_DeveRetornarErroSaldoInsuficiente()
     {
         // Arrange
-        var useCase = new RegistrarVendaDebitoUseCase(_contaRepository.Object, _transacaoRepository.Object, _auditoriaService.Object, _resilienceService.Object);
+        var useCase = new RegistrarVendaDebitoUseCase(loggerMock.Object, _contaRepository.Object, _transacaoRepository.Object, _auditoriaService.Object, _resilienceService.Object);
 
         var request = new RegistrarVendaDebitoRequest
         {
             ContaId = _conta.Id,
-            Valor = 200,
-            NumeroConta = _conta.NumeroConta,
+            Valor = 200
         };
 
-        _contaRepository.Setup(x => x.BuscarPorNumeroConta(It.IsAny<long>())).ReturnsAsync(_conta);
+        _contaRepository.Setup(x => x.ObterPorIdAsync(It.IsAny<Guid>())).ReturnsAsync(_conta);
 
         //Action     
         Func<Task> act = () => useCase.ExecutarAsync(request, CancellationToken.None);

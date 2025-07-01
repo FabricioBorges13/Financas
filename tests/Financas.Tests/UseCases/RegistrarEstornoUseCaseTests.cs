@@ -1,4 +1,5 @@
 using FluentAssertions;
+using Microsoft.Extensions.Logging;
 using Moq;
 
 public class RegistrarEstornoUseCaseTests
@@ -10,6 +11,7 @@ public class RegistrarEstornoUseCaseTests
     private Mock<IAuditoriaService> _auditoriaService;
     private Mock<ITransacaoRepository> _transacaoRepository;
     private Mock<IResilienceService> _resilienceService;
+    private Mock<ILogger<RegistrarEstornoUseCase>> loggerMock = new Mock<ILogger<RegistrarEstornoUseCase>>();
     public RegistrarEstornoUseCaseTests()
     {
         _cliente = new Cliente("teste", "51741608066", TipoDocumento.CPF);
@@ -28,7 +30,7 @@ public class RegistrarEstornoUseCaseTests
     public async void RegistrarEstorno_DeveSerRegistrado()
     {
         //Arrange  
-        var useCase = new RegistrarEstornoUseCase(_contaRepository.Object, _transacaoRepository.Object, _auditoriaService.Object, _resilienceService.Object);
+        var useCase = new RegistrarEstornoUseCase(loggerMock.Object,_contaRepository.Object, _transacaoRepository.Object, _auditoriaService.Object, _resilienceService.Object);
         _conta.AdicionarSaldo(200);
         var request = new RegistrarEstornoRequest
         {
@@ -60,7 +62,7 @@ public class RegistrarEstornoUseCaseTests
     public async Task RegistrarEstorno_DeveRetornarErroDeContaNaoEncontrada()
     {
         // Arrange
-        var useCase = new RegistrarEstornoUseCase(_contaRepository.Object, _transacaoRepository.Object, _auditoriaService.Object, _resilienceService.Object);
+        var useCase = new RegistrarEstornoUseCase(loggerMock.Object,_contaRepository.Object, _transacaoRepository.Object, _auditoriaService.Object, _resilienceService.Object);
 
         var request = new RegistrarEstornoRequest
         {
@@ -82,7 +84,7 @@ public class RegistrarEstornoUseCaseTests
     public async Task RegistrarEstorno_DeveRetornarErroSaldoInsuficiente()
     {
         // Arrange
-        var useCase = new RegistrarEstornoUseCase(_contaRepository.Object, _transacaoRepository.Object, _auditoriaService.Object, _resilienceService.Object);
+        var useCase = new RegistrarEstornoUseCase(loggerMock.Object,_contaRepository.Object, _transacaoRepository.Object, _auditoriaService.Object, _resilienceService.Object);
 
         var request = new RegistrarEstornoRequest
         {

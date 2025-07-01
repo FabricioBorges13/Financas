@@ -27,6 +27,11 @@ services:
       dockerfile: src/Financas.Api/Dockerfile
     environment:
       - ASPNETCORE_URLS=http://+:5008
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
     ports:
       - "5000:5008"
     networks:
