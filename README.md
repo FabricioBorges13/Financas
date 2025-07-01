@@ -65,7 +65,13 @@ cd Financas
 ```bash
 docker-compose -f docker/docker-compose.yml up --build
 ```
+**Para recriar o container, o volume do banco de dados deve ser removido**
 
+```bash
+docker down
+docker volume ls
+docker volume rm nome_do_volume
+```
 3. **Acesse o Swagger da API:**
 
 ```
@@ -73,7 +79,7 @@ http://localhost:5000/swagger
 ```
 
 > ✅ O Swagger estará disponível na porta `5000`.
-Seed incial, com criação de dois clientes e suas respectivas contas para realizar transações
+Seed incial, com criação de dois clientes e suas respectivas contas para realizar transações.
 > Os testes podem ser realizados diretamente pelo swagger.
 ---
 
