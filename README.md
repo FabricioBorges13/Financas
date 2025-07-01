@@ -1,6 +1,6 @@
 # 💰 Finanças - Sistema de Gerenciamento Financeiro
 
-Projeto desenvolvido como solução para desafio técnico. Ele simula operações bancárias como abertura de contas, transações financeiras (vendas, estornos, transferências), controle de saldo, resiliência, idempotência, auditoria e mais.
+Ele simula operações bancárias como abertura de contas, transações financeiras (vendas, estornos, transferências), controle de saldo, resiliência, idempotência, auditoria e mais.
 
 ## 📘 Sumário
 
@@ -73,7 +73,8 @@ http://localhost:5000/swagger
 ```
 
 > ✅ O Swagger estará disponível na porta `5000`.
-
+Seed incial, com criação de dois clientes e suas respectivas contas para realizar transações
+> Os testes podem ser realizados diretamente pelo swagger.
 ---
 
 ## 📁 Estrutura do Projeto
