@@ -102,24 +102,24 @@ public class ResilienceServiceTests
 
         var resilienceService = new ResilienceService(_dbContextMock.Object, _cacheMock.Object);
 
-        // Act
-        var result = await resilienceService.ExecuteAsync<int>(
-            chaveLock,
-            chaveIdempotencia,
-            async ct =>
-            {
-                await Task.Delay(10, ct);
-                throw new InvalidOperationException("Erro esperado");
-            },
-            CancellationToken.None,
-            onFailure);
+        // Act + Assert
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            resilienceService.ExecuteAsync<int>(
+                chaveLock,
+                chaveIdempotencia,
+                async ct =>
+                {
+                    await Task.Delay(10, ct);
+                    throw new InvalidOperationException("Erro esperado");
+                },
+                CancellationToken.None,
+                onFailure));
 
-        // Assert
+        Assert.Equal("Erro esperado", exception.Message);
         Assert.True(onFailureCalled);
-        Assert.Equal(default(int), result);
     }
-    
-     [Fact]
+
+    [Fact]
     public async Task OperacoesConcorrentes_NaMesmaConta_DeveBloquearSegunda()
     {
         // Arrange
@@ -127,16 +127,32 @@ public class ResilienceServiceTests
         var chaveLock = GeradorChave.GerarChaveLock(contaId);
         var chaveIdempotencia = GeradorChave.GerarChaveIdempotencia(TipoTransacao.VendaCreditoAVista, contaId);
 
+        _cacheMock.Setup(c => c.ExistsAsync(It.IsAny<string>())).ReturnsAsync(false);
         _cacheMock.SetupSequence(x => x.SetIfNotExistsAsync(chaveLock, It.IsAny<string>(), It.IsAny<TimeSpan>()))
             .ReturnsAsync(true)  // Primeira chamada: lock obtido
             .ReturnsAsync(false); // Segunda chamada: lock já em uso
+
+        _cacheMock.Setup(c => c.ReleaseIfMatchAsync(chaveLock, It.IsAny<string>())).ReturnsAsync(true);
+
+        var databaseFacadeMock = new Mock<DatabaseFacade>(_dbContextMock.Object);
+        var dbTransactionMock = new Mock<IDbContextTransaction>();
+
+        _dbContextMock.Setup(db => db.Database).Returns(databaseFacadeMock.Object);
+        databaseFacadeMock
+            .Setup(db => db.BeginTransactionAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(dbTransactionMock.Object);
+
+        dbTransactionMock.Setup(t => t.CommitAsync(It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
+        dbTransactionMock.Setup(t => t.RollbackAsync(It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
+
+        _dbContextMock.Setup(db => db.SaveChangesAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
 
         var resilienceService = new ResilienceService(_dbContextMock.Object, _cacheMock.Object);
 
         // Act
         var task1 = resilienceService.ExecuteAsync(chaveLock, chaveIdempotencia, async ct =>
         {
-            await Task.Delay(100); // simula tempo de execução
+            await Task.Delay(100, ct); // simula tempo de execução
             return true;
         }, CancellationToken.None);
 
@@ -150,6 +166,6 @@ public class ResilienceServiceTests
 
         // Assert
         Assert.Equal("Recurso em uso. Tente novamente.", exception.Message);
+        Assert.True(result1);
     }
-
 }

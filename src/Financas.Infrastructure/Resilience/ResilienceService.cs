@@ -12,10 +12,10 @@ public class ResilienceService : IResilienceService
     }
 
     public async Task<T> ExecuteAsync<T>(string chaveLock,
-    string chaveIdempotencia,
-    Func<CancellationToken, Task<T>> action,
-    CancellationToken cancellationToken,
-    Func<Exception, Task>? onFailure = null)
+        string chaveIdempotencia,
+        Func<CancellationToken, Task<T>> action,
+        CancellationToken cancellationToken,
+        Func<Exception, Task>? onFailure = null)
     {
         // Idempotência
         if (await _cache.ExistsAsync(chaveIdempotencia))
@@ -30,22 +30,42 @@ public class ResilienceService : IResilienceService
 
         try
         {
-            // Polly: Retry + Fallback
+            // Fallback para exceções específicas que você já trata no controller
             var fallbackPolicy = Policy<T>
-                .Handle<Exception>()
-                .FallbackAsync(default(T), async (ex, ct) =>
-                {
-                    if (onFailure is not null)
-                        await onFailure(ex.Exception);
-                });
+                .Handle<InvalidOperationException>()
+                .Or<KeyNotFoundException>()
+                .Or<ArgumentException>()
+                .FallbackAsync(
+                    fallbackAction: (context, ct) =>
+                    {
+                        // Rethrow a exceção preservada no contexto
+                        if (context.TryGetValue("exception", out var exObj) && exObj is Exception ex)
+                            throw ex;
 
+                        throw new Exception("Erro desconhecido no fallback.");
+                    },
+                    onFallbackAsync: async (delegateResult, context) =>
+                    {
+                        var ex = delegateResult.Exception;
+
+                        // Armazena exceção para rethrow no fallbackAction
+                        context["exception"] = ex;
+
+                        if (onFailure is not null)
+                            await onFailure(ex);
+                    });
+
+            // Retry genérico
             var retryPolicy = Policy<T>
                 .Handle<Exception>()
                 .WaitAndRetryAsync(3, attempt => TimeSpan.FromMilliseconds(300));
 
             var policy = Policy.WrapAsync(fallbackPolicy, retryPolicy);
 
-            return await policy.ExecuteAsync(async ct =>
+            // Executa política com contexto compartilhado
+            var context = new Context(); // Polly.Context
+
+            return await policy.ExecuteAsync(async (ctx, ct) =>
             {
                 await using var transaction = await _dbContext.Database.BeginTransactionAsync(ct);
                 try
@@ -66,7 +86,7 @@ public class ResilienceService : IResilienceService
                     await transaction.RollbackAsync(ct);
                     throw;
                 }
-            }, cancellationToken);
+            }, context, cancellationToken);
         }
         finally
         {
