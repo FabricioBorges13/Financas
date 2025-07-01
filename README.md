@@ -1,6 +1,7 @@
+
 # 💰 Finanças - Sistema de Gerenciamento Financeiro
 
-Ele simula operações bancárias como abertura de contas, transações financeiras (vendas, estornos, transferências), controle de saldo, resiliência, idempotência, auditoria e mais.
+Ele simula operações bancárias como abertura de contas, transações financeiras (vendas, estornos, transferências), controle de saldo, resiliência, idempotência, auditoria, logs e mais.
 
 ## 📘 Sumário
 
@@ -28,6 +29,7 @@ Este projeto tem como objetivo simular um sistema financeiro completo, com foco 
 - Resiliência via Polly
 - Lock distribuído com Redis
 - Transações consistentes com Entity Framework
+- **Logs estruturados com Serilog (arquivo e console)**
 
 ---
 
@@ -39,6 +41,7 @@ Este projeto tem como objetivo simular um sistema financeiro completo, com foco 
 - Redis
 - Docker & Docker Compose
 - Polly (Resiliência)
+- Serilog (Logs)
 - Moq + xUnit (Testes)
 - Clean Architecture
 
@@ -65,36 +68,40 @@ cd Financas
 ```bash
 docker-compose -f docker/docker-compose.yml up --build
 ```
-**Para recriar o container, o volume do banco de dados deve ser removido**
+
+**Para recriar o container, o volume do banco de dados deve ser removido:**
 
 ```bash
-docker down
+docker-compose down
 docker volume ls
 docker volume rm nome_do_volume
 ```
+
 3. **Acesse o Swagger da API:**
 
 ```
 http://localhost:5000/swagger
 ```
 
-> ✅ O Swagger estará disponível na porta `5000`.
-Seed incial, com criação de dois clientes e suas respectivas contas para realizar transações.
-> Os testes podem ser realizados diretamente pelo swagger.
+> ✅ O Swagger estará disponível na porta `5000`.  
+> Inclui seed inicial com dois clientes e suas respectivas contas.
+
+> Os testes podem ser realizados diretamente pelo Swagger.
+
 ---
 
 ## 📁 Estrutura do Projeto
 
 ```text
 Financas/
-├── docker/                  # Arquivos Docker e docker-compose
+├── docker/                      # Arquivos Docker e docker-compose
 ├── src/
-│   ├── Financas.Api/        # Camada de apresentação (Controllers / Swagger)
-│   ├── Financas.Application/ # Casos de uso, interfaces e DTOs
-│   ├── Financas.Domain/     # Entidades e lógica de domínio
-│   ├── Financas.Infrastructure/ # Infra (banco, Redis, resiliência, repositórios)
-├── Financas.Tests/      # Testes unitários
-├── Financas.sln             # Solução .NET
+│   ├── Financas.Api/            # Camada de apresentação (Controllers / Swagger)
+│   ├── Financas.Application/    # Casos de uso, interfaces e DTOs
+│   ├── Financas.Domain/         # Entidades e lógica de domínio
+│   ├── Financas.Infrastructure/ # Infra (banco, Redis, logs, repositórios)
+├── Financas.Tests/              # Testes unitários
+├── Financas.sln                 # Solução .NET
 ```
 
 ---
@@ -110,6 +117,9 @@ Financas/
 - [x] Resiliência e fallback com Polly
 - [x] Idempotência com Redis
 - [x] Lock distribuído por chave de recurso (concorrência)
+- [x] **Logs estruturados com Serilog (JSON)**
+  - Escrita no console e em arquivo (log/app.log)
+  
 
 ---
 
@@ -125,7 +135,7 @@ Cobertura:
 
 - Entidades de domínio
 - UseCases (mockando dependências como repositórios e serviços)
-- Verificação de chamadas de auditoria, repositórios, transações
+- Testes de concorrência e resiliência com Polly
 
 ---
 
@@ -133,5 +143,3 @@ Cobertura:
 
 Desenvolvido por **Fabricio Borges**  
 [https://github.com/FabricioBorges13](https://github.com/FabricioBorges13)
-
----
